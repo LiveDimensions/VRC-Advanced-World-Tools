@@ -62,3 +62,6 @@ crashlytics-build.properties
 Assets/PackageMakerWindowData.asset*
 .idea
 .vscode
+
+# Per-user editor settings
+/[Uu]ser[Ss]ettings/

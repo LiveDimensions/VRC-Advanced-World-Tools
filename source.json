@@ -1,0 +1,18 @@
+{
+    "name": "VRC Advanced World Tools",
+    "id": "com.livedimensions.vrc-advanced-world-tools",
+    "url": "https://livedimensions.github.io/VRC-Advanced-World-Tools/index.json",
+    "author": {
+        "name": "LiveDimensions",
+        "url": "https://github.com/LiveDimensions"
+    },
+    "description": "Tools for developing large VRChat worlds as a team",
+    "infoLink": {
+        "url": "https://github.com/LiveDimensions/VRC-Advanced-World-Tools",
+        "text": "View on GitHub"
+    },
+    "bannerUrl": "banner.png",
+    "githubRepos": [
+        "LiveDimensions/VRC-Advanced-World-Tools"
+    ]
+}

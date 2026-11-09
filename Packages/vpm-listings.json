@@ -1,0 +1,8 @@
+{
+  "_comment": "Which VPM listing each package in vpm-manifest.json comes from. vpm-manifest.json doesn't record this. Package Sync fills it in from the machine that installs a package, and adds the listings to VCC/ALCOM on machines that are missing them.",
+  "listings": {
+    "com.vrchat.base": "https://packages.vrchat.com/official?download",
+    "com.vrchat.worlds": "https://packages.vrchat.com/official?download",
+    "com.vrchat.core.vpm-resolver": "https://packages.vrchat.com/official?download"
+  }
+}
