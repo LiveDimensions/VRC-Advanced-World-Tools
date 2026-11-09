@@ -1,0 +1,24 @@
+{
+  "name": "com.livedimensions.udonsharpfastbuild",
+  "version": "1.0.0",
+  "description": "Speeds up UdonSharp's scene build step in VRChat world builds and play mode (from O(n^2) to linear for worlds with many cross-referenced UdonSharpBehaviours), with an A/B verifier that proves the result is identical.",
+  "displayName": "UdonSharp Fast Build",
+  "author": {
+    "name": "LiveDimensions",
+    "email": "livedimensions@gmail.com",
+    "url": "https://github.com/LiveDimensions"
+  },
+  "keywords": [
+    "vrchat",
+    "vrc",
+    "udonsharp",
+    "build",
+    "performance"
+  ],
+  "license": "MIT",
+  "type": "tool",
+  "unity": "2022.3",
+  "vpmDependencies": {
+    "com.vrchat.worlds": "^3.10.6"
+  }
+}
