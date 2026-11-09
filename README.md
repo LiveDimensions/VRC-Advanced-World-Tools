@@ -9,8 +9,4 @@ Tools for developing large VRChat worlds as a team, published as VPM packages.
 
 ## Installing
 
-Add this listing to VCC/ALCOM, then add the packages to your project from there:
-
-```
-https://livedimensions.github.io/VRC-Advanced-World-Tools/index.json
-```
+Add the listing to VCC/ALCOM from the [package listing page](https://livedimensions.github.io/VRC-Advanced-World-Tools/), then add the packages to your project from there.
