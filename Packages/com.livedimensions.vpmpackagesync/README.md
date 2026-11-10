@@ -62,6 +62,21 @@ if (problems.Count > 0) throw new Exception(string.Join("\n", problems.Select(i 
 LiveDimensions.PackageSync.PackageSyncWindow.DrawIssues(LiveDimensions.PackageSync.PackageSyncChecker.GetIssuesCached());
 ```
 
+### Installing packages automatically
+
+In batch mode, or when launched with `-vpmPackageSyncAutoInstall`, Unity installs missing packages and reinstalls wrong versions when the
+project loads, without showing any dialogs or opening the window. Each package is tried once per editor session, and
+packages committed to git are never reinstalled. Launch with `-vpmPackageSyncNoAutoInstall` to turn it off, including
+in batch mode. Build scripts can do the same from code:
+
+```csharp
+while (LiveDimensions.PackageSync.PackageSyncChecker.AutoInstall())
+{
+    // wait for EditorApplication.isCompiling, isUpdating and PackageSyncChecker.ReinstallPending to clear
+}
+// then check PackageSyncChecker.GetIssues() for anything that couldn't be fixed
+```
+
 ## The VRChat resolver's load check
 
 `VpmResolverPatch` comments out `[InitializeOnLoad]` in

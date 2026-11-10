@@ -1,6 +1,6 @@
 {
   "name": "com.livedimensions.vpmpackagesync",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Keeps a VRChat project's packages the same on every machine: checks installed packages against vpm-manifest.json and Packages/, records which VPM listing each package comes from so missing listings get added to VCC/ALCOM automatically, and replaces the VRChat VPM resolver's load check with one that also catches wrong versions.",
   "displayName": "VPM Package Sync",
   "author": {

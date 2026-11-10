@@ -472,8 +472,69 @@ namespace LiveDimensions.PackageSync
             }
 
             Debug.LogError("[PackageSync] Reinstall failed: " + error);
-            EditorUtility.DisplayDialog("VPM Package Sync", "Reinstall failed: " + error, "Ok");
+            //nobody is there to dismiss a dialog during an automatic install, it would hang the build
+            if (!Application.isBatchMode && !SessionState.GetBool(AutoInstallActiveKey, false))
+                EditorUtility.DisplayDialog("VPM Package Sync", "Reinstall failed: " + error, "Ok");
         }
+
+        /// <summary>Launch Unity with this argument to fix packages when the project loads, without any dialogs. Batch mode does this without the argument.</summary>
+        public const string AutoInstallArgument = "-vpmPackageSyncAutoInstall";
+        /// <summary>Launch Unity with this argument to turn automatic installing off, including in batch mode and from code. Wins over AutoInstallArgument.</summary>
+        public const string NoAutoInstallArgument = "-vpmPackageSyncNoAutoInstall";
+        private const string AutoInstallAttemptedKey = "PackageSync.AutoInstallAttempted";
+        private const string AutoInstallActiveKey = "PackageSync.AutoInstallActive";
+
+        private static bool HasArgument(string argument) => Environment.GetCommandLineArgs().Contains(argument, StringComparer.OrdinalIgnoreCase);
+
+        /// <summary>
+        /// Whether to fix packages when the project loads: in batch mode or with AutoInstallArgument, unless NoAutoInstallArgument
+        /// is there. Never in asset import workers, which are batch mode processes of their own.
+        /// </summary>
+        public static bool AutoInstallRequested =>
+            !AssetDatabase.IsAssetImportWorkerProcess() && !HasArgument(NoAutoInstallArgument) && (Application.isBatchMode || HasArgument(AutoInstallArgument));
+
+        /// <summary>
+        /// Installs missing packages and reinstalls mismatched ones, with no dialogs. Does one piece of work per call, because
+        /// each can reload scripts: keep calling until it returns false, waiting for compiling and ReinstallPending in between.
+        /// Each package is only tried once per editor session, so a failure can't loop. Check GetIssues afterwards for what's
+        /// still wrong (a mismatched committed package is never touched, that has to be fixed through git).
+        /// </summary>
+        public static bool AutoInstall()
+        {
+            if (HasArgument(NoAutoInstallArgument)) return false;
+            if (ReinstallPending) return true;
+            SessionState.SetBool(AutoInstallActiveKey, true);
+
+            var attempted = new HashSet<string>(SessionState.GetString(AutoInstallAttemptedKey, "").Split('\n'));
+            var issues = GetIssues().Where(i => i.Blocking && !attempted.Contains(AttemptKey(i))).ToList();
+            var missing = issues.Where(i => i.kind == PackageIssueKind.Missing).ToList();
+            var mismatched = issues.Where(i => i.kind == PackageIssueKind.VersionMismatch && !i.committed).ToList();
+            if (missing.Count == 0 && mismatched.Count == 0) return false;
+
+            AddNeededListings(missing.Concat(mismatched), null);
+
+            if (missing.Count > 0)
+            {
+                attempted.UnionWith(missing.Select(AttemptKey));
+                SessionState.SetString(AutoInstallAttemptedKey, string.Join("\n", attempted));
+                Debug.Log($"[PackageSync] Installing missing packages: {string.Join(", ", missing.Select(i => i.id))}");
+                if (!ResolveMissing(out var error)) Debug.LogError("[PackageSync] Resolving failed: " + error);
+                foreach (var issue in GetIssues().Where(i => i.kind == PackageIssueKind.Missing))
+                    Debug.LogError("[PackageSync] Still missing: " + DownloadFailureReason(issue.id, issue.expectedVersion, issue.listingUrl));
+                return true;
+            }
+
+            foreach (var issue in mismatched)
+            {
+                attempted.Add(AttemptKey(issue));
+                SessionState.SetString(AutoInstallAttemptedKey, string.Join("\n", attempted));
+                if (BeginReinstall(issue, out var error)) return true;
+                Debug.LogError($"[PackageSync] Couldn't reinstall {issue.id}: {error}");
+            }
+            return false;
+        }
+
+        private static string AttemptKey(PackageIssue issue) => $"{issue.id}:{issue.expectedVersion}";
 
         #endregion
 

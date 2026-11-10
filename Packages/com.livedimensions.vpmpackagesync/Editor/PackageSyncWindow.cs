@@ -65,6 +65,13 @@ namespace LiveDimensions.PackageSync
                 if (PackageSyncChecker.AddNeededListings(toAdd, null).Count > 0) issues = PackageSyncChecker.GetIssues();
             }
 
+            var autoInstall = PackageSyncChecker.AutoInstallRequested;
+            if (autoInstall && PackageSyncChecker.AutoInstall())
+            {
+                EditorApplication.delayCall += CheckWhenReady;
+                return;
+            }
+
             foreach (var issue in issues)
             {
                 if (issue.Blocking) Debug.LogWarning("[PackageSync] " + issue.Message);
@@ -78,6 +85,7 @@ namespace LiveDimensions.PackageSync
                 SessionState.EraseString(LastShownKey);
                 return;
             }
+            if (autoInstall) return;
 
             var signature = PackageSyncChecker.Signature(blocking);
             if (SessionState.GetString(LastShownKey, "") == signature) return;
@@ -91,7 +99,7 @@ namespace LiveDimensions.PackageSync
         /// </summary>
         private static void OfferToCommitOwnPackage()
         {
-            if (Application.isBatchMode || SessionState.GetBool(OwnPackageCheckedKey, false)) return;
+            if (Application.isBatchMode || PackageSyncChecker.AutoInstallRequested || SessionState.GetBool(OwnPackageCheckedKey, false)) return;
             SessionState.SetBool(OwnPackageCheckedKey, true);
             if (EditorUserSettings.GetConfigValue(DontAskToCommitKey) == "1") return;
 
